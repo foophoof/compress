@@ -62,7 +62,7 @@ impl<R: Read> Inflater<R> {
                 }
 
                 BlockType::NoCompression(len)
-            },
+            }
             0b01 => BlockType::FixedHuffman,
             0b10 => BlockType::DynamicHuffman,
             0b11 => panic!("reserved block type"), // TODO: shouldn't panic
@@ -70,7 +70,7 @@ impl<R: Read> Inflater<R> {
         };
 
         // println!("beginning block of type {:?}", btype);
-        
+
         self.block = Some(Block {
             bfinal: bfinal,
             btype: btype,
@@ -79,7 +79,10 @@ impl<R: Read> Inflater<R> {
         Ok(())
     }
 
-    fn read_codelengths(&mut self, lengths: usize, codelengthtable: &huffman::Table) -> io::Result<Vec<u8>> {
+    fn read_codelengths(&mut self,
+                        lengths: usize,
+                        codelengthtable: &huffman::Table)
+                        -> io::Result<Vec<u8>> {
         let mut codelengths = vec![0; lengths];
         let mut run_val = None;
         let mut run_len = 0;
@@ -142,8 +145,9 @@ impl<R: Read> Inflater<R> {
 
         let codelentable = huffman::make_table(7, codelencodelen.as_slice());
         // println!("made codelen table: {:?}", codelentable);
-        
-        let codelengths = try!(self.read_codelengths(lit_len_code_count + distance_code_count, &codelentable));
+
+        let codelengths =
+            try!(self.read_codelengths(lit_len_code_count + distance_code_count, &codelentable));
         let (litlenlengths, distlengths) = codelengths.split_at(lit_len_code_count);
 
         self.litlentable = Some(huffman::make_table(10, litlenlengths));
@@ -181,7 +185,8 @@ impl<R: Read> Inflater<R> {
             257...264 => sym - 254,
             265...284 => {
                 let extra_bits = (sym - 261) / 4;
-                (((sym - 265) % 4 + 4) << extra_bits) + 3 + try!(self.reader.read_u16(extra_bits as usize))
+                (((sym - 265) % 4 + 4) << extra_bits) + 3 +
+                try!(self.reader.read_u16(extra_bits as usize))
             }
             285 => 258,
             _ => unreachable!(),
@@ -206,7 +211,7 @@ impl<R: Read> Inflater<R> {
 
     fn next_byte(&mut self) -> io::Result<Option<u8>> {
         if let Some((dist, run)) = self.backread {
-            let b = *self.lookback.get(dist-1).expect("lookback too small");
+            let b = *self.lookback.get(dist - 1).expect("lookback too small");
             if run == 1 {
                 self.backread = None;
             } else {
@@ -248,7 +253,7 @@ impl<R: Read> Inflater<R> {
                         }
 
                         return self.next_byte();
-                    },
+                    }
                     len @ 257...285 => {
                         if self.disttable.is_none() {
                             panic!("distance length encountered, but no distance tree");
@@ -256,7 +261,8 @@ impl<R: Read> Inflater<R> {
 
                         let run = try!(self.decode_run_length(len));
                         assert!(run >= 3 && run <= 258);
-                        let dist_code = try!(self.reader.read_table(self.disttable.as_ref().expect("dist table didn't exist")));
+                        let dist_code = try!(self.reader
+                            .read_table(self.disttable.as_ref().expect("dist table didn't exist")));
                         let dist = try!(self.decode_distance(dist_code));
 
                         self.backread = Some((dist as usize, run as usize));

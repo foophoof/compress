@@ -53,7 +53,7 @@ impl<R: Read> BitReader<R> {
 
         Ok(())
     }
-    
+
     fn read_buf_byte(&mut self) -> io::Result<u8> {
         let mut bytebuf: [u8; 1] = [0];
         let nread = try!(self.reader.read(&mut bytebuf));
@@ -72,7 +72,10 @@ impl<R: Read> BitReader<R> {
         self.read_table_contents(table.bits, table.contents.as_slice())
     }
 
-    fn read_table_contents(&mut self, bits: u8, contents: &[huffman::TableEntry]) -> io::Result<u16> {
+    fn read_table_contents(&mut self,
+                           bits: u8,
+                           contents: &[huffman::TableEntry])
+                           -> io::Result<u16> {
         let mut lookup = try!(self.peek_u16(bits as usize));
         lookup = ((lookup >> 1) & 0x5555) | ((lookup & 0x5555) << 1);
         lookup = ((lookup >> 2) & 0x3333) | ((lookup & 0x3333) << 2);

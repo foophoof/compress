@@ -21,7 +21,8 @@ pub enum TableEntry {
 fn insert_in_table(contents: &mut Vec<TableEntry>, bits: u8, code: u16, symbol: u16, length: u8) {
     if length <= bits {
         for i in 0..(1 << (bits - length)) {
-            contents[((code << (bits - length)) + i) as usize] = TableEntry::Symbol(symbol as u16, length as u8);
+            contents[((code << (bits - length)) + i) as usize] = TableEntry::Symbol(symbol as u16,
+                                                                                    length as u8);
         }
     } else {
         let prefix = code >> (length - bits);
@@ -29,15 +30,19 @@ fn insert_in_table(contents: &mut Vec<TableEntry>, bits: u8, code: u16, symbol: 
             TableEntry::None => {
                 let subcontents = vec![TableEntry::None; 1 << bits];
                 contents[prefix as usize] = TableEntry::Table(subcontents);
-            },
-            TableEntry::Table(_) => {},
+            }
+            TableEntry::Table(_) => {}
             _ => unreachable!(),
         };
         let mut subcontents = match contents[prefix as usize] {
             TableEntry::Table(ref mut subcontents) => subcontents,
             _ => unreachable!(),
         };
-        insert_in_table(&mut subcontents, bits, code & ((1 << (length - bits)) - 1), symbol, length - bits);
+        insert_in_table(&mut subcontents,
+                        bits,
+                        code & ((1 << (length - bits)) - 1),
+                        symbol,
+                        length - bits);
     }
 }
 
@@ -53,7 +58,7 @@ pub fn make_table(bits: u8, lengths: &[u8]) -> Table {
     let mut next_code = [0; 16];
     let mut code = 0;
     for bits in 1..16 {
-        code = (code + bl_count[bits-1]) << 1;
+        code = (code + bl_count[bits - 1]) << 1;
         next_code[bits] = code;
     }
 
@@ -74,7 +79,7 @@ pub fn make_table(bits: u8, lengths: &[u8]) -> Table {
             Some(code) => code,
             None => continue,
         };
-        
+
         let length = lengths[symbol];
         insert_in_table(&mut contents, bits, code, symbol as u16, length);
     }
@@ -102,6 +107,9 @@ fn test_make_table() {
             assert_eq!(subcontents[0b10], TableEntry::Symbol(3, 1));
             assert_eq!(subcontents[0b11], TableEntry::Symbol(3, 1));
         }
-        _ => panic!("expected subtable at table.contents[0b11], but was {:?}", table.contents[0b11]),
+        _ => {
+            panic!("expected subtable at table.contents[0b11], but was {:?}",
+                   table.contents[0b11])
+        }
     }
 }

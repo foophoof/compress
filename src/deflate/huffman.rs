@@ -5,12 +5,6 @@
 // http://opensource.org/licenses/MIT>, at your option. This file may not be
 // copied, modified, or distributed except according to those terms.
 
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub enum Tree {
-    Node(u16),
-    Tree(Box<Tree>, Box<Tree>), // (0, 1)
-}
-
 #[derive(Clone, Debug)]
 pub struct Table {
     pub bits: u8,

@@ -26,19 +26,7 @@ impl<R: Read> BitReader<R> {
         }
     }
 
-    pub fn bit_position(&self) -> usize {
-        self.bytes_read * 8 - self.bitbuf_remaining
-    }
-
     pub fn read_u8(&mut self, bits: usize) -> io::Result<u8> {
-        // let mut out = 0;
-
-        // for i in 0..bits {
-        //     out |= try!(self.read_bit()) << i;
-        // }
-
-        // Ok(out)
-
         self.read_u16(bits).map(|c| c as u8)
     }
 
@@ -54,15 +42,6 @@ impl<R: Read> BitReader<R> {
         try!(self.need(bits));
         Ok((self.bitbuf & ((1 << bits) - 1)) as u16)
     }
-
-    // fn read_bit(&mut self) -> io::Result<u8> {
-    //     if self.bitbuf_remaining == 0 {
-    //         self.bitbuf = try!(self.read_buf_byte());
-    //         self.bitbuf_remaining = 8;
-    //     }
-    //     self.bitbuf_remaining -= 1;
-    //     Ok((self.bitbuf >> (7 - self.bitbuf_remaining)) & 1)
-    // }
 
     fn need(&mut self, bits: usize) -> io::Result<()> {
         assert!(bits <= 24); // TODO: Can this be 25?
@@ -94,13 +73,6 @@ impl<R: Read> BitReader<R> {
     }
 
     fn read_table_contents(&mut self, bits: u8, contents: &[huffman::TableEntry]) -> io::Result<u16> {
-        // let mut lookup_rev = try!(self.peek_u16(bits as usize));
-        // let mut lookup = 0;
-        // for _ in 0..bits {
-        //     lookup <<= 1;
-        //     lookup |= lookup_rev & 1;
-        //     lookup_rev >>= 1;
-        // }
         let mut lookup = try!(self.peek_u16(bits as usize));
         lookup = ((lookup >> 1) & 0x5555) | ((lookup & 0x5555) << 1);
         lookup = ((lookup >> 2) & 0x3333) | ((lookup & 0x3333) << 2);

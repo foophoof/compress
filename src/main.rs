@@ -15,12 +15,6 @@ use std::io::{self, copy, Read};
 use deflate::Inflater;
 
 fn main() {
-    for _ in 0..1 {
-        do_thing()
-    }
-}
-
-fn do_thing() {
     let stdin = io::stdin();
     let mut rf = stdin.lock();
 

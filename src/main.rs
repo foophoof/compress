@@ -10,8 +10,7 @@ extern crate alloc_system;
 
 extern crate deflate;
 
-use std::fs::File;
-use std::io::{copy, Read, BufReader};
+use std::io::{self, copy, Read};
 
 use deflate::Inflater;
 
@@ -22,7 +21,8 @@ fn main() {
 }
 
 fn do_thing() {
-    let mut rf = BufReader::new(File::open("xargo-in.gz").expect("couldn't open file"));
+    let stdin = io::stdin();
+    let mut rf = stdin.lock();
 
     let mut header: [u8; 10] = [0; 10];
     rf.read(&mut header).expect("couldn't read header");
@@ -31,6 +31,6 @@ fn do_thing() {
 
     let mut inflater = Inflater::new(&mut rf);
 
-    let mut wf = File::create("xargo-out").expect("couldn't create file");
+    let mut wf = io::stdout();
     copy(&mut inflater, &mut wf).expect("couldn't copy data");
 }

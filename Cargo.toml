@@ -1,0 +1,11 @@
+[package]
+name = "deflate"
+version = "0.1.0"
+authors = ["foophoof <me@foophoof.com>"]
+license = "MIT OR Apache-2.0"
+
+
+[dependencies]
+
+[profile.release]
+debug = true
